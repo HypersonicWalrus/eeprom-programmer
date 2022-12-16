@@ -13,7 +13,7 @@
    Output the address bits and outputEnable signal using shift registers.
 */
 void setAddress(int address, bool outputEnable) {
-  shiftOut(SHIFT_DATA, SHIFT_CLK, MSBFIRST, (address >> 8) | (outputEnable ? 0x00 : 0x80));
+  shiftOut(SHIFT_DATA, SHIFT_CLK, MSBFIRST, (address >> 8) | (outputEnable ? 0x00 : 0x08));
   shiftOut(SHIFT_DATA, SHIFT_CLK, MSBFIRST, address);
 
   digitalWrite(SHIFT_LATCH, LOW);
@@ -23,8 +23,8 @@ void setAddress(int address, bool outputEnable) {
 
 
 /*
-   Read a byte from the EEPROM at the specified address.
-*/
+ * Read a byte from the EEPROM at the specified address.
+ */
 byte readEEPROM(int address) {
   for (int pin = EEPROM_D0; pin <= EEPROM_D7; pin += 1) {
     pinMode(pin, INPUT);
@@ -40,8 +40,8 @@ byte readEEPROM(int address) {
 
 
 /*
-   Write a byte to the EEPROM at the specified address.
-*/
+ * Write a byte to the EEPROM at the specified address.
+ */
 void writeEEPROM(int address, byte data) {
   setAddress(address, /*outputEnable*/ false);
   for (int pin = EEPROM_D0; pin <= EEPROM_D7; pin += 1) {
@@ -88,45 +88,44 @@ void setup() {
   pinMode(WRITE_EN, OUTPUT);
   Serial.begin(57600);
 
-
   // Bit patterns for the digits 0..9
-  byte digits[] = { 0x7e, 0x30, 0x6d, 0x79, 0x33, 0x5b, 0x5f, 0x70, 0x7f, 0x7b };
+  byte digits[] = {  0x7e, 0x50, 0x6d, 0x79, 0x53, 0x3b, 0x3f, 0x70, 0x7f, 0x7b};
 
   Serial.println("Programming ones place");
-  for (int value = 0; value <= 255; value += 1) {
-    writeEEPROM(value, digits[value % 10]);
+  for (int address = 0; address <= 255; address += 1) {
+    writeEEPROM(address, digits[address % 10]);
   }
   Serial.println("Programming tens place");
-  for (int value = 0; value <= 255; value += 1) {
-    writeEEPROM(value + 256, digits[(value / 10) % 10]);
+  for (int address = 0; address <= 255; address += 1) {
+    writeEEPROM(address + 256, digits[(address / 10) % 10]);
   }
   Serial.println("Programming hundreds place");
-  for (int value = 0; value <= 255; value += 1) {
-    writeEEPROM(value + 512, digits[(value / 100) % 10]);
+  for (int address = 0; address <= 255; address += 1) {
+    writeEEPROM(address + 512, digits[(address / 100) % 10]);
   }
   Serial.println("Programming sign");
-  for (int value = 0; value <= 255; value += 1) {
-    writeEEPROM(value + 768, 0);
+  for (int address = 0; address <= 255; address += 1) {
+    writeEEPROM(address + 768, 0);
   }
 
   Serial.println("Programming ones place (twos complement)");
-  for (int value = -128; value <= 127; value += 1) {
-    writeEEPROM((byte)value + 1024, digits[abs(value) % 10]);
+  for (int address = -128; address <= 127; address += 1) {
+    writeEEPROM((byte)address + 1024, digits[abs(address) % 10]);
   }
   Serial.println("Programming tens place (twos complement)");
-  for (int value = -128; value <= 127; value += 1) {
-    writeEEPROM((byte)value + 1280, digits[abs(value / 10) % 10]);
+  for (int address = -128; address <= 127; address += 1) {
+    writeEEPROM((byte)address + 1280, digits[abs(address / 10) % 10]);
   }
   Serial.println("Programming hundreds place (twos complement)");
-  for (int value = -128; value <= 127; value += 1) {
-    writeEEPROM((byte)value + 1536, digits[abs(value / 100) % 10]);
+  for (int address = -128; address <= 127; address += 1) {
+    writeEEPROM((byte)address + 1536, digits[abs(address / 100) % 10]);
   }
   Serial.println("Programming sign (twos complement)");
-  for (int value = -128; value <= 127; value += 1) {
-    if (value < 0) {
-      writeEEPROM((byte)value + 1792, 0x01);
+  for (int address = -128; address <= 127; address += 1) {
+    if (address < 0) {
+      writeEEPROM((byte)address + 1792, 0x01);
     } else {
-      writeEEPROM((byte)value + 1792, 0);
+      writeEEPROM((byte)address + 1792, 0);
     }
   }
 
